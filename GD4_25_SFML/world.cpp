@@ -13,7 +13,7 @@
 //Ben Arrowsmith D00257746
 //John Nally D00258753
 
-World::World(sf::RenderWindow& window, SoundPlayer& sounds, FontHolder& font) //Ben Arrowsmith sound
+World::World(sf::RenderWindow& window, SoundPlayer& sounds, FontHolder& font, bool networked) //Ben Arrowsmith sound
 	: m_window(window)
 	, m_camera(window.getDefaultView())
 	, m_textures()
@@ -29,6 +29,8 @@ World::World(sf::RenderWindow& window, SoundPlayer& sounds, FontHolder& font) //
 	, m_pointbox_spawn_timer(sf::Time::Zero) //Timer
 	, m_player1_score(0) //Player 1 Score Count
 	, m_player2_score(0) //Player 2 score
+	, m_networked(networked)
+	, m_network_node(nullptr)
 
 {
 	LoadTextures();
@@ -42,6 +44,9 @@ void World::Update(sf::Time dt)
 	m_player_aircraft->SetVelocity(0.f, 0.f);
 	m_player_aircraft2->SetVelocity(0.f, 0.f); //Ben Arrowsmith
 
+	//network set velocity
+	for (Aircraft* a : m_network_aircraft)
+		a->SetVelocity(0.f, 0.f);
 	DestroyEntitiesOutsideView();
 
 	UpdateSounds(); //Ben Arrowsmith
@@ -130,25 +135,76 @@ void World::BuildScene()
 	background_sprite->setPosition(sf::Vector2f(0, 0));
 	m_scene_layers[static_cast<int>(SceneLayers::kBackground)]->AttachChild(std::move(background_sprite));
 
-	//Homework add the player's aircraft
-	std::unique_ptr<Aircraft> leader(new Aircraft(AircraftType::kEagle, m_textures, m_fonts));
-	m_player_aircraft = leader.get();
-	m_player_aircraft->setPosition(m_spawn_position);
-	m_player_aircraft->SetVelocity(0.f, 0.f);
-	std::cout << "Player 1 spawn position: " << m_spawn_position.x << ", " << m_spawn_position.y << std::endl;
+	if (m_networked)
+	{
+		std::unique_ptr<NetworkNode> network_node(new NetworkNode());
+		m_network_node = network_node.get();
+		m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(network_node));
+	}
+	else
+	{
+		std::unique_ptr<Aircraft> leader(new Aircraft(AircraftType::kEagle, m_textures, m_fonts));
+		m_player_aircraft = leader.get();
+		m_player_aircraft->SetIdentifier(1);   
+		m_player_aircraft->setPosition(m_spawn_position);
+		m_player_aircraft->SetVelocity(0.f, 0.f);
 
-	m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(leader));
+		m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(leader));
 
-	std::unique_ptr<SoundNode> soundNode(new SoundNode(m_sounds));
-	m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(soundNode));
-	
-	std::unique_ptr<Aircraft> player2(new Aircraft(AircraftType::kEagle2, m_textures, m_fonts));  //Ben Arrowsmith
-	m_player_aircraft2 = player2.get();
-	m_player_aircraft2->setPosition(m_spawn_position2);
-	m_player_aircraft2->SetVelocity(0.f, 0.f);
+		std::unique_ptr<SoundNode> soundNode(new SoundNode(m_sounds));
+		m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(soundNode));
 
-	std::cout << "Player 2 spawn position: " << m_spawn_position2.x << ", " << m_spawn_position2.y << std::endl;
-	m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(player2));
+		std::unique_ptr<Aircraft> player2(new Aircraft(AircraftType::kEagle2, m_textures, m_fonts));  //Ben Arrowsmith
+		m_player_aircraft2 = player2.get();
+		m_player_aircraft2->SetIdentifier(2);
+		m_player_aircraft2->setPosition(m_spawn_position2);
+		m_player_aircraft2->SetVelocity(0.f, 0.f);
+
+		m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(player2));
+	}
+}
+
+Aircraft* World::AddAircraft(uint8_t identifier)
+{
+	// identifier 1 kEagle (Player 1) everything else kEagle2 (Player 2)
+	AircraftType type = (identifier == 1) ? AircraftType::kEagle : AircraftType::kEagle2;
+
+	std::unique_ptr<Aircraft> aircraft(new Aircraft(type, m_textures, m_fonts));
+	aircraft->SetIdentifier(identifier);
+	aircraft->setPosition(m_spawn_position);   // server will immediately correct position
+	aircraft->SetVelocity(0.f, 0.f);
+
+	Aircraft* ptr = aircraft.get();
+	m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(aircraft));
+	m_network_aircraft.push_back(ptr);
+	return ptr;
+}
+
+void World::RemoveAircraft(uint8_t identifier)
+{
+	Aircraft* aircraft = GetAircraft(identifier);
+	if (aircraft)
+	{
+		aircraft->Destroy();
+		m_network_aircraft.erase(
+			std::remove(m_network_aircraft.begin(), m_network_aircraft.end(), aircraft),
+			m_network_aircraft.end());
+	}
+}
+
+Aircraft* World::GetAircraft(uint8_t identifier) const
+{
+	for (Aircraft* a : m_network_aircraft)
+		if (a->GetIdentifier() == identifier)
+			return a;
+	return nullptr;
+}
+
+bool World::PollGameAction(GameActions::Action& out)
+{
+	if (m_network_node)
+		return m_network_node->PollGameAction(out);
+	return false;
 }
 
 void World::AdaptPlayerVelocity()
@@ -173,19 +229,23 @@ void World::AdaptPlayerPosition()
 	sf::FloatRect view_bounds(m_camera.getCenter() - m_camera.getSize() / 2.f, m_camera.getSize());
 	const float border_distance = 40.f;
 
-	sf::Vector2f position = m_player_aircraft->getPosition();
-	position.x = std::min(position.x, view_bounds.size.x - border_distance);
-	position.x = std::max(position.x, border_distance);
-	position.y = std::min(position.y, view_bounds.position.y + view_bounds.size.y - border_distance);
-	position.y = std::max(position.y, view_bounds.position.y + border_distance);
-	m_player_aircraft->setPosition(position);
+	auto clamp = [&](Aircraft* m_player_aircraft)
+	{
+		sf::Vector2f position = m_player_aircraft->getPosition();
+		position.x = std::min(position.x, view_bounds.size.x - border_distance);
+		position.x = std::max(position.x, border_distance);
+		position.y = std::min(position.y, view_bounds.position.y + view_bounds.size.y - border_distance);
+		position.y = std::max(position.y, view_bounds.position.y + border_distance);
+		m_player_aircraft->setPosition(position);
+		};
 
-	sf::Vector2f position2 = m_player_aircraft2->getPosition(); //Ben Arrowsmith
-	position2.x = std::min(position2.x, view_bounds.size.x - border_distance);
-	position2.x = std::max(position2.x, border_distance);
-	position2.y = std::min(position2.y, view_bounds.position.y + view_bounds.size.y - border_distance);
-	position2.y = std::max(position2.y, view_bounds.position.y + border_distance);
-	m_player_aircraft2->setPosition(position2);
+	clamp(m_player_aircraft);
+	clamp(m_player_aircraft2); 
+
+	for (Aircraft* a : m_network_aircraft)
+	{
+		clamp(a);
+	}
 }
 
 sf::FloatRect World::GetViewBounds() const
@@ -229,53 +289,56 @@ void World::HandleCollisions()
 
 	for (SceneNode::Pair pair : collision_pairs)
 	{
-		if (MatchesCategories(pair, ReceiverCategories::kPlayerAircraft, ReceiverCategories::kEnemyProjectile))
+		// ---- Player 1 hit by enemy projectile → -1 score ----
+		if (MatchesCategories(pair,
+			ReceiverCategories::kPlayerAircraft,
+			ReceiverCategories::kEnemyProjectile))
 		{
-			//John Nally: WHEN PLAYER 1 SHOT, REMOVES 1 SCORE FROM PLAYER 1
 			auto& aircraft = static_cast<Aircraft&>(*pair.first);
 			auto& projectile = static_cast<Projectile&>(*pair.second);
-
 			aircraft.AddScore(-1);
-			m_player1_score -= 1;
+			if (!m_networked) m_player1_score -= 1;
 			projectile.Destroy();
 		}
-		else if (MatchesCategories(pair, ReceiverCategories::kPlayer2Aircraft, ReceiverCategories::kAlliedProjectile))
+		// ---- Player 2 hit by allied projectile → -1 score ----
+		else if (MatchesCategories(pair,
+			ReceiverCategories::kPlayer2Aircraft,
+			ReceiverCategories::kAlliedProjectile))
 		{
-			//John Nally: WHEN PLAYER 2 SHOT, REMOVES 1 SCORE FROM PLAYER 1
 			auto& aircraft = static_cast<Aircraft&>(*pair.first);
 			auto& projectile = static_cast<Projectile&>(*pair.second);
-
 			aircraft.AddScore(-1);
-			m_player2_score -= 1;
+			if (!m_networked) m_player2_score -= 1;
 			projectile.Destroy();
 		}
-		else if (MatchesCategories(pair, ReceiverCategories::kPlayerAircraft, ReceiverCategories::kPointBox)) {
-			//John Nally: PLAYER 1 COLLISION W/ POINTBOXES
+		// ---- Player 1 collects point box ----
+		else if (MatchesCategories(pair,
+			ReceiverCategories::kPlayerAircraft,
+			ReceiverCategories::kPointBox))
+		{
 			auto& player = static_cast<Aircraft&>(*pair.first);
 			auto& pointbox = static_cast<PointBox&>(*pair.second);
-
-			int points = pointbox.GetPointValue();
-			m_player1_score += points;
-			player.AddScore(points);
+			int pts = pointbox.GetPointValue();
+			player.AddScore(pts);
+			if (!m_networked) m_player1_score += pts;
 			player.PlayLocalSound(m_command_queue, SoundEffect::kCollectPickup);
-
 			pointbox.Destroy();
 		}
-		else if (MatchesCategories(pair, ReceiverCategories::kPlayer2Aircraft, ReceiverCategories::kPointBox)) { 
-			//John Nally: PLAYER 2 COLLISION W/ POINTBOXES
+		// ---- Player 2 collects point box ----
+		else if (MatchesCategories(pair,
+			ReceiverCategories::kPlayer2Aircraft,
+			ReceiverCategories::kPointBox))
+		{
 			auto& player = static_cast<Aircraft&>(*pair.first);
 			auto& pointbox = static_cast<PointBox&>(*pair.second);
-
-			int points = pointbox.GetPointValue();
-			m_player2_score += points;
-			player.AddScore(points);
+			int pts = pointbox.GetPointValue();
+			player.AddScore(pts);
+			if (!m_networked) m_player2_score += pts;
 			player.PlayLocalSound(m_command_queue, SoundEffect::kCollectPickup);
-
 			pointbox.Destroy();
 		}
 	}
 }
-
 void World::DestroyEntitiesOutsideView()
 {
 	Command command;
@@ -347,6 +410,15 @@ int World::GetWinningPlayer() const {
 }
 //John Nally: Checks if either player has reached the score threshold to win the game (30 points in this case)
 bool World::HasPlayerReachedPoints() const {
+	if (m_networked) {
+		// In a networked game, we might want to check if any player has reached the points threshold
+		for (Aircraft* a : m_network_aircraft) {
+			if (a->GetScore() >= 30) {
+				return true;
+			}
+		}
+		return false;
+	}
 	return m_player_aircraft->GetScore() >= 30 || m_player_aircraft2->GetScore() >= 30;
 }
 

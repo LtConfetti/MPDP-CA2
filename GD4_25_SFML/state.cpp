@@ -11,7 +11,7 @@ State::~State()
 {
 }
 
-State::Context::Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, Player& player, Player2& player2, SoundPlayer& sound): window(&window), textures(&textures), fonts(&fonts), player(&player), player2(&player2), sounds(&sound) //Ben Arrowsmith Player2 and sound
+State::Context::Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, Player& player, SoundPlayer& sound, KeyBinding& keys1, KeyBinding& keys2): window(&window), textures(&textures), fonts(&fonts), player(&player), sounds(&sound), keys1(&keys1), keys2(&keys2) //Ben Arrowsmith Player2 and sound
 {
 }
 

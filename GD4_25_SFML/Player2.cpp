@@ -1,4 +1,4 @@
-#include "player2.hpp"
+/*#include "player2.hpp"
 #include "aircraft.hpp"
 
 //Ben Arrowsmith D00257746
@@ -50,7 +50,7 @@ Player2::Player2()
 
 void Player2::HandleEvent(const sf::Event& event, CommandQueue& command_queue)
 {
-   /* std::printf("test stuff");*/
+   /* std::printf("test stuff");
     const auto* key_pressed = event.getIf<sf::Event::KeyPressed>();
     if (key_pressed)
     {
@@ -141,4 +141,4 @@ bool Player2::IsRealTimeAction(Action action)
     default:
         return false;
     }
-}
+}*/

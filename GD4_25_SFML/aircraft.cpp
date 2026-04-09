@@ -43,6 +43,7 @@ Aircraft::Aircraft(AircraftType type, const TextureHolder& textures, const FontH
 	, m_textures(textures)
 	, m_anim_timer(sf::Time::Zero)
 	, m_anime_frame(0)
+	, m_identifier(0) // default: unassigned (local-only mode)
 {
 	Utility::CentreOrigin(m_sprite);
 
@@ -261,4 +262,17 @@ void Aircraft::UpdateAnimation(sf::Time dt) {
 		m_sprite.setTexture(m_textures.Get(defaultTex));
 		Utility::CentreOrigin(m_sprite);
 	}
+}
+
+
+//Network Identity Functions
+
+uint8_t Aircraft::GetIdentifier() const
+{
+	return m_identifier;
+}
+
+void Aircraft::SetIdentifier(uint8_t identifier)
+{
+	m_identifier = identifier;
 }

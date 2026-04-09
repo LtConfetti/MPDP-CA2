@@ -8,11 +8,14 @@
 #include "settings_state.hpp"
 #include "game_over_state.hpp"
 #include "state.hpp"
+#include "multiplayer_gamestate.hpp"
 //John Nally D00258753
 Application::Application() : m_window(sf::VideoMode({ 1024, 768 }), "States", sf::Style::Close),
-m_player(new Player()),  //Ben Arrowsmith
-m_player2(new Player2()), //Ben Arrowsmith
-m_stack(State::Context(m_window, m_textures, m_fonts, *m_player, *m_player2, m_sound))
+m_key_binding_1(1), 
+m_key_binding_2(2),
+m_player(nullptr, 1, &m_key_binding_1), 
+
+m_stack(State::Context(m_window, m_textures, m_fonts, m_player, m_sound, m_key_binding_1, m_key_binding_2))
 {
 	m_window.setKeyRepeatEnabled(false);
 	m_fonts.Load(FontID::kMain, "Media/Fonts/Sansation.ttf");
@@ -35,8 +38,7 @@ m_stack(State::Context(m_window, m_textures, m_fonts, *m_player, *m_player2, m_s
 }
 
 Application::~Application() {
-	delete m_player;   // Free memory allocated for Player
-	delete m_player2;  // Free memory allocated for Player2  Ben Arrowsmith, used AI to fix bug
+
 }
 
 void Application::Run()
@@ -95,6 +97,10 @@ void Application::RegisterStates()
 	m_stack.RegisterState<PauseState>(StateID::kPause);
 	m_stack.RegisterState<SettingsState>(StateID::kSettings);
 	m_stack.RegisterState<GameOverState>(StateID::kGameOver);
+
+	m_stack.RegisterState<MultiplayerGameState>(StateID::kHostGame, true);
+	m_stack.RegisterState<MultiplayerGameState>(StateID::kJoinGame, false);
+	m_stack.RegisterState<PauseState>(StateID::kNetworkPause);
 }
 
 

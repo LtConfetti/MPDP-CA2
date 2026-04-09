@@ -14,6 +14,7 @@ enum class ReceiverCategories
 	kPlayer2Aircraft = 1 << 7, //Ben Arrowsmith
 	kPointBox = 1 << 8,
 	kSoundEffect = 1 << 9,
+	kNetwork = 1 <<10,
 
 
 	kAircraft = kPlayerAircraft | kAlliedAircraft | kEnemyAircraft,

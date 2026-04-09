@@ -9,11 +9,6 @@ enum class Action
 	kMoveRight,
 	kMoveUp,
 	kMoveDown,
-	kMoveLeft2,//Ben Arrowsmith
-	kMoveRight2,//Ben Arrowsmith
-	kMoveUp2,//Ben Arrowsmith
-	kMoveDown2,//Ben Arrowsmith
-	kBulletFire2,
 	kBulletFire,
 	kActionCount
 };

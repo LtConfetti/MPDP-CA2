@@ -8,12 +8,30 @@
 MenuState::MenuState(StateStack& stack, Context context) : State(stack, context), m_background_sprite(context.textures->Get(TextureID::kTitleScreen))
 {
     auto play_button = std::make_shared<gui::Button>(*context.fonts, *context.textures);
-    play_button->setPosition(sf::Vector2f(384, 300));
+    play_button->setPosition(sf::Vector2f(384, 100));
     play_button->SetText("Play");
     play_button->SetCallback([this]()
         {
             RequestStackPop();
             RequestStackPush(StateID::kGame);
+        });
+
+    auto host_button = std::make_shared<gui::Button>(*context.fonts, *context.textures);
+    host_button->setPosition(sf::Vector2f(384, 200));
+    host_button->SetText("Host Game");
+    host_button->SetCallback([this]()
+        {
+            RequestStackPop();
+            RequestStackPush(StateID::kHostGame);
+        });
+
+    auto join_button = std::make_shared<gui::Button>(*context.fonts, *context.textures);
+    join_button->setPosition(sf::Vector2f(384, 300));
+    join_button->SetText("Join Game");
+    join_button->SetCallback([this]()
+        {
+            RequestStackPop();
+            RequestStackPush(StateID::kJoinGame);
         });
 
     auto settings_button = std::make_shared<gui::Button>(*context.fonts, *context.textures);
@@ -33,6 +51,8 @@ MenuState::MenuState(StateStack& stack, Context context) : State(stack, context)
         });
 
     m_gui_container.Pack(play_button);
+    m_gui_container.Pack(host_button);
+    m_gui_container.Pack(join_button);
     m_gui_container.Pack(settings_button);
     m_gui_container.Pack(exit_button);
 }

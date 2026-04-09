@@ -30,6 +30,8 @@ public:
 
 	void PlayLocalSound(CommandQueue& commands, SoundEffect effect); //Ben Arrowsmith
 
+	uint8_t GetIdentifier() const;
+	void SetIdentifier(uint8_t identifier);
 
 private:
 	virtual void DrawCurrent(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -65,4 +67,5 @@ private:
 	int m_anime_frame; //John Nally:  current animation frame
 	static constexpr float kFrameTime = 0.2f; //John Nally:  Time for each animation frame
 
+	uint8_t m_identifier; // John Nally: Unique identifier for network sync
 };

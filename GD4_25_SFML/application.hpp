@@ -5,6 +5,7 @@
 #include "resource_holder.hpp"
 #include "resource_identifiers.hpp"
 #include "statestack.hpp"
+#include "key_binding.hpp"
 
 //Ben Arrowsmith D00257746
 class Application
@@ -22,8 +23,9 @@ private:
 
 private:
 	sf::RenderWindow m_window;
-	Player* m_player;
-	Player2* m_player2;		//Ben Arrowsmith
+	KeyBinding m_key_binding_1;	// P1: WASD
+	KeyBinding m_key_binding_2;	// P2: IJKL
+	Player m_player;
 	SoundPlayer m_sound;	//Ben Arrowsmith
 
 	TextureHolder m_textures;

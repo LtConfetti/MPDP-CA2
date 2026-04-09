@@ -9,23 +9,31 @@
 #include "pointbox.hpp"
 #include "pointbox_type.hpp"
 #include "bloom_effect.hpp"
+#include "network_node.hpp"
 
 //Ben Arrowsmith D00257746
 //John Nally D00258753
 class World
 {
 public:
-	explicit World(sf::RenderWindow& window, SoundPlayer& sound, FontHolder& font); //Ben Arrowsmith
+	explicit World(sf::RenderWindow& window, SoundPlayer& sound, FontHolder& font, bool networked = false); //Ben Arrowsmith
 	void Update(sf::Time dt);
 	void Draw();
 
 	CommandQueue& GetCommandQueue();
-
+	//local game setup
 	bool HasPlayerReachedPoints() const; //John Nally: New Win Condition for Points
-
 	int GetPlayer1Score() const; //John Nally: Player1 Get Points
 	int GetPlayer2Score() const; //John Nally: Player 2 Get Points
 	int GetWinningPlayer() const; //John Nally: Winner for GameState
+
+	//network game setup
+	Aircraft* AddAircraft(uint8_t identifier);
+	void RemoveAircraft(uint8_t identifier);
+	Aircraft* GetAircraft(uint8_t identifier) const;
+	bool PollGameAction(GameActions::Action& out);
+
+	sf::FloatRect GetViewBounds() const; //John Nally: For Multiplayer State to get view bounds for network sync
 
 private:
 	void LoadTextures();
@@ -33,7 +41,6 @@ private:
 	void AdaptPlayerVelocity();
 	void AdaptPlayerPosition();
 
-	sf::FloatRect GetViewBounds() const;
 	sf::FloatRect GetBattleFieldBounds() const;
 
 	void HandleCollisions();
@@ -56,8 +63,13 @@ private:
 	sf::FloatRect m_world_bounds;
 	sf::Vector2f m_spawn_position;
 	sf::Vector2f m_spawn_position2;
+
+	//local play, fixed players
 	Aircraft* m_player_aircraft;
 	Aircraft* m_player_aircraft2; //Ben Arrowsmith
+
+	//Networked play, indexed players
+	std::vector<Aircraft*> m_network_aircraft; // indexed by identifier
 
 	sf::Time m_pointbox_spawn_timer; //Timer to track when to spawn the boxes
 	int m_player1_score; //Score for player 1
@@ -67,4 +79,7 @@ private:
 
 	sf::RenderTexture m_scene_texture; //For Bloom Effect
 	BloomEffect m_bloom_effect;
+
+	bool m_networked; 
+	NetworkNode* m_network_node; 
 };

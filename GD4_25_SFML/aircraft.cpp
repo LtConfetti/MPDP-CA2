@@ -58,23 +58,13 @@ Aircraft::Aircraft(AircraftType type, const TextureHolder& textures, const FontH
 	m_health_display = health_display.get();
 	AttachChild(std::move(health_display));
 
-	if (Aircraft::GetCategory() == static_cast<int>(ReceiverCategories::kPlayerAircraft))
-	{
-		//Collecting and adding Score
+
 		std::string* score = new std::string("");
 		std::unique_ptr<TextNode> score_display(new TextNode(fonts, *score));
 		m_score_display = score_display.get();
-		m_score_display->SetColor(sf::Color::Red); // Set score color to red for player 1
+		m_score_display->SetColor(sf::Color::White);
 		AttachChild(std::move(score_display));
-	}
-	else if (Aircraft::GetCategory() == static_cast<int>(ReceiverCategories::kPlayer2Aircraft))
-	{
-		std::string* score = new std::string("");
-		std::unique_ptr<TextNode> score_display(new TextNode(fonts, *score));
-		m_score_display = score_display.get();
-		m_score_display->SetColor(sf::Color(0, 100, 0)); // Set score color to red for player 1
-		AttachChild(std::move(score_display));
-	}
+
 	UpdateTexts();
 }
 
@@ -102,12 +92,7 @@ void Aircraft::UpdateTexts()
 	if (m_score_display)
 	{
 		m_score_display->setPosition(sf::Vector2f(0.f, 50.f));
-		if (IsAllied()) {
-			m_score_display->SetString("Score 1: " + std::to_string(m_current_score));
-		}
-		else if (IsPlayer2()) {
-			m_score_display->SetString("Score 2: " + std::to_string(m_current_score));
-		}
+		m_score_display->SetString("Player: " + std::to_string(m_identifier) + " : " + std::to_string(m_current_score));
 	}
 }
 

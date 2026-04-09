@@ -23,12 +23,12 @@ bool GameState::Update(sf::Time dt)
 
 		if (winner == 1) {
 			std::cout << "Player 1 Wins" << std::endl;
-			m_player.SetMissionStatus(MissionStatus::kPlayer1Wins);
+			GetContext().player->SetMissionStatus(MissionStatus::kPlayer1Wins);
 
 		}
 		else if (winner == 2) {
 			std::cout << "Player 2 Wins" << std::endl;
-			m_player.SetMissionStatus(MissionStatus::kPlayer2Wins);
+			GetContext().player->SetMissionStatus(MissionStatus::kPlayer2Wins);
 		}
 		RequestStackPush(StateID::kGameOver);
  	}

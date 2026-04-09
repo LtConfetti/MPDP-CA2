@@ -35,6 +35,8 @@ public:
 
 	sf::FloatRect GetViewBounds() const; //John Nally: For Multiplayer State to get view bounds for network sync
 
+	void SpawnNetworkPointBox(uint8_t type_idx, float spawn_x);
+
 private:
 	void LoadTextures();
 	void BuildScene();

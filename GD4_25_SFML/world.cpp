@@ -382,6 +382,8 @@ void World::DestroyEntitiesOutsideView()
 
 void World::UpdatePointBoxSpawning(sf::Time dt)
 {
+    if (m_networked) return; // In networked mode, point box spawning is controlled by the server
+
     const sf::Time kSpawnInterval = sf::seconds(1.f);
     m_pointbox_spawn_timer += dt;
     if (m_pointbox_spawn_timer >= kSpawnInterval)
@@ -405,6 +407,16 @@ void World::SpawnPointBoxes()
     float spawn_x = min_x + static_cast<float>(Utility::RandomInt(range + 1));
     float spawn_y = view_bounds.position.y - 50.f;
 
+    box->setPosition(sf::Vector2f(spawn_x, spawn_y));
+    m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(box));
+}
+
+void World::SpawnNetworkPointBox(uint8_t type_idx, float spawn_x)
+{
+    PointBoxType type = static_cast<PointBoxType>(type_idx);
+    std::unique_ptr<PointBox> box(new PointBox(type, m_textures, m_fonts));
+    sf::FloatRect view_bounds = GetViewBounds();
+    float spawn_y = view_bounds.position.y - 50.f;
     box->setPosition(sf::Vector2f(spawn_x, spawn_y));
     m_scene_layers[static_cast<int>(SceneLayers::kAir)]->AttachChild(std::move(box));
 }

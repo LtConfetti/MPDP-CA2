@@ -483,6 +483,15 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
     }
     break;
 
+    case Server::PacketType::kSpawnPickup:
+    {
+        uint8_t type_idx;
+        float   spawn_x;
+        packet >> type_idx >> spawn_x;
+        m_world.SpawnNetworkPointBox(type_idx, spawn_x);
+	}
+    break;
+
     default:
         break;
     }

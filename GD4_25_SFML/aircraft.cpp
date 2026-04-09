@@ -160,9 +160,9 @@ void Aircraft::UpdateCurrent(sf::Time dt, CommandQueue& commands)
 	//Check if bullets were fired
 	CheckProjectileLaunch(dt, commands);
 
-	if (IsAllied() || IsPlayer2()) {
-		UpdateAnimation(dt);
-	}
+	//if (IsAllied() || IsPlayer2()) {
+	//	UpdateAnimation(dt);
+	//}
 }
 
 void Aircraft::CheckProjectileLaunch(sf::Time dt, CommandQueue& commands)
@@ -216,6 +216,8 @@ int Aircraft::GetScore() {
 	return m_current_score;
 }
 
+
+
 void Aircraft::UpdateAnimation(sf::Time dt) {
 	//John Nally: this function updates animation based on velocity, if moving, it cycles through 2 frames, else it goes to an idle frame
 	//AI WAS USED IN THE CREATION OF THIS FUNCTION
@@ -248,6 +250,8 @@ void Aircraft::UpdateAnimation(sf::Time dt) {
 		Utility::CentreOrigin(m_sprite);
 	}
 }
+
+
 
 
 //Network Identity Functions

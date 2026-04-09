@@ -5,6 +5,7 @@
 #include "text_node.hpp"
 #include "projectile_type.hpp"
 #include "command_queue.hpp"
+#include "animation.hpp"
 
 //Ben Arrowsmith D00257746
 //John Nally D00258753
@@ -40,6 +41,8 @@ private:
 	void CheckProjectileLaunch(sf::Time dt, CommandQueue& commands);
 	bool IsAllied() const;
 	bool IsPlayer2() const; //Ben Arrowsmith
+
+
 
 	void UpdateAnimation(sf::Time dt);
 

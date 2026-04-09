@@ -25,7 +25,7 @@ private:
 	sf::RenderWindow m_window;
 	KeyBinding m_key_binding_1;	// P1: WASD
 	KeyBinding m_key_binding_2;	// P2: IJKL
-	Player m_player;
+
 	SoundPlayer m_sound;	//Ben Arrowsmith
 
 	TextureHolder m_textures;

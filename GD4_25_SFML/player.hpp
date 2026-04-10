@@ -26,6 +26,13 @@ public:
 	void DisableAllRealtimeActions(bool enable);
 	bool IsLocal() const;   // true if this player has a local key bindings
 
+	void SetWinnerID(uint8_t id);
+	uint8_t GetWinnerID() const;
+
+	void SetIdentifier(uint8_t identifier);
+	uint8_t GetIdentifier() const;
+
+
 private:
 	void InitialiseActions();
 
@@ -35,6 +42,7 @@ private:
 	std::map<Action, bool> m_action_proxies;  
 	MissionStatus m_current_mission_status;
 	uint8_t m_identifier;
-	sf::TcpSocket* m_socket;           
+	sf::TcpSocket* m_socket;      
+	uint8_t m_winner_id;
 };
 

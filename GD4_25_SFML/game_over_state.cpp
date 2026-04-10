@@ -12,7 +12,23 @@ GameOverState::GameOverState(StateStack& stack, Context context)
     //John Nally: Game condition if Player 1 wins
     sf::Vector2f window_size(context.window->getSize());
 
-    if (context.player->GetMissionStatus() == MissionStatus::kPlayer1Wins) {
+
+    if (context.player->GetMissionStatus() == MissionStatus::kPlayerXWins) {
+		uint8_t winner_id = context.player->GetWinnerID();
+		uint8_t local_id = context.player->GetIdentifier();
+
+        if (local_id == winner_id) {
+            m_game_over_text.setString("You Win!");
+            m_game_over_text.setCharacterSize(50);
+            m_game_over_text.setFillColor(sf::Color::Green);
+        }
+        else {
+            m_game_over_text.setString("You Lose!");
+            m_game_over_text.setCharacterSize(50);
+            m_game_over_text.setFillColor(sf::Color::Red);
+        }
+    }
+    else if (context.player->GetMissionStatus() == MissionStatus::kPlayer1Wins) {
         m_game_over_text.setString("Apple Jacks Wins!");
         m_game_over_text.setCharacterSize(50);
         m_game_over_text.setFillColor(sf::Color::Red);

@@ -308,10 +308,11 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         Aircraft* aircraft = m_world.AddAircraft(id);
         aircraft->setPosition(pos);
 
+        GetContext().player->SetIdentifier(id);         // Store local identifier on player object
+
         // Local player: give them the appropriate key binding
         // id==1 → keys1 (WASD+Space), id==2 → keys2 (IJKL+RShift)
-        const KeyBinding* binding = (id == 1)
-            ? GetContext().keys1 : GetContext().keys2;
+        const KeyBinding* binding = GetContext().keys1;
 
         m_players[id].reset(new Player(&m_socket, id, binding));
         m_local_player_identifiers.push_back(id);
@@ -470,14 +471,9 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
                 }
             }
         }
-
-        // Use the shared Context::player to carry the winner status into GameOverState
-        if (winner_id == 1)
-            GetContext().player->SetMissionStatus(MissionStatus::kPlayer1Wins);
-        else if (winner_id == 2)
-            GetContext().player->SetMissionStatus(MissionStatus::kPlayer2Wins);
-        else
-            GetContext().player->SetMissionStatus(MissionStatus::kMissionSuccess);
+      
+        GetContext().player->SetWinnerID(winner_id); // storing winner ID and status on the shared player object so GameOverState can display the correct message
+        GetContext().player->SetMissionStatus(MissionStatus::kPlayerXWins);
 
         RequestStackPush(StateID::kGameOver);
     }
@@ -489,7 +485,7 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         float   spawn_x;
         packet >> type_idx >> spawn_x;
         m_world.SpawnNetworkPointBox(type_idx, spawn_x);
-	}
+    }
     break;
 
     default:

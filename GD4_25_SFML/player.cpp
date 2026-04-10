@@ -41,6 +41,7 @@ Player::Player(sf::TcpSocket* socket, uint8_t identifier, const KeyBinding* bind
     , m_current_mission_status(MissionStatus::kMissionRunning)
     , m_identifier(identifier)
     , m_socket(socket)
+	, m_winner_id(0)
 {
     InitialiseActions();
 
@@ -193,4 +194,25 @@ void Player::InitialiseActions()
         DerivedAction<Aircraft>(AircraftMover(0.f, +1.f, m_identifier));
     m_action_binding[Action::kBulletFire].action =
         DerivedAction<Aircraft>(AircraftFireTrigger(m_identifier));
+}
+
+//Mission Status and winner ID getters/setters
+void Player::SetWinnerID(uint8_t id)
+{
+    m_winner_id = id;
+}
+
+uint8_t Player::GetWinnerID() const
+{
+    return m_winner_id;
+}
+
+void Player::SetIdentifier(uint8_t id)
+{
+    m_identifier = id;
+}
+
+uint8_t Player::GetIdentifier() const
+{
+    return m_identifier;
 }

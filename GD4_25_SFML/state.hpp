@@ -33,6 +33,8 @@ public:
 		KeyBinding* keys1;    // P1 keys
 		KeyBinding* keys2;    // P2 keys 
 
+		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, SoundPlayer& sound, KeyBinding& keys1, KeyBinding& keys2);
+
 	};
 
 public:

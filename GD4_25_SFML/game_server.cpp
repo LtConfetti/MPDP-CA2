@@ -117,6 +117,15 @@ void GameServer::ExecutionThread()
 
 void GameServer::Tick()
 {
+    static int tick_count = 0;
+    static sf::Clock tick_report_clock;
+    tick_count++;
+    if (tick_report_clock.getElapsedTime() >= sf::seconds(1.f)) {
+        std::cout << "[SERVER] [TICK] Tick rate observed: " << tick_count << " ticks/sec\n\n";
+        tick_count = 0;
+        tick_report_clock.restart();
+    }
+
     // Broadcast a fresh state snapshot to all clients
     UpdateClientState();
 
@@ -374,6 +383,11 @@ void GameServer::BroadcastMessage(const std::string& message)
 
 void GameServer::SendToAll(sf::Packet& packet)
 {
+    //AI
+    std::size_t pkt_size = packet.getDataSize();
+    std::cout << "[SERVER] [PACKET] SendToAll packet size=" << pkt_size << " bytes\n\n";
+
+
     for (std::size_t i = 0; i < m_connected_players; ++i)
         if (m_peers[i]->m_ready)
             m_peers[i]->m_socket.send(packet);

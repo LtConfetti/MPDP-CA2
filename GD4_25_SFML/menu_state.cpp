@@ -8,8 +8,9 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <string>
 
-MenuState::MenuState(StateStack& stack, Context context) : State(stack, context), m_background_sprite(context.textures->Get(TextureID::kTitleScreen)), m_scoreboard_title(context.fonts->Get(FontID::kMain)), m_personal_wins(context.fonts->Get(FontID::kMain)), m_results_text(context.fonts->Get(FontID::kMain))
+MenuState::MenuState(StateStack& stack, Context context) : State(stack, context), m_background_sprite(context.textures->Get(TextureID::kTitleScreen)), m_scoreboard_title(context.fonts->Get(FontID::kMain)), m_personal_wins(context.fonts->Get(FontID::kMain)), m_local_wins(0)
 {
     auto play_button = std::make_shared<gui::Button>(*context.fonts, *context.textures);
     play_button->setPosition(sf::Vector2f(384, 100));
@@ -79,8 +80,6 @@ MenuState::MenuState(StateStack& stack, Context context) : State(stack, context)
 	m_scoreboard_title.setFillColor(sf::Color::Yellow);
 	m_scoreboard_title.setPosition(sf::Vector2f(750.f, 140.f));
 
-	m_results_text.setPosition(sf::Vector2f(750.f, 160.f));
-
 	LoadResults();
 }
 
@@ -88,22 +87,44 @@ void MenuState::LoadResults()
 {
 	std::ifstream stats("results.txt");
 
-	std::vector<std::string> lines;
-    std::string line;
-    while (std::getline(stats, line))
+    int local_id = 0;
     {
-        if(!line.empty())
-			lines.push_back(line);
-    }
-    
-	const int kMax = 15;
-    std::string combined;
-	for (int i = 0; i < static_cast<int>(lines.size()) && i < kMax; ++i)
-    {
-        combined += lines[lines.size() - 1 - i] + "\n";
-    }
+        std::ifstream id_file("player_id.txt");
+        id_file >> local_id;
+	}
 
-	m_results_text.setString(combined);
+	std::vector<std::string> lines;
+	std::string line;
+    while (std::getline(stats, line))
+        if (!line.empty())
+        {
+            lines.push_back(line);
+        }
+
+	const int kMaxLines = 5;
+	const float kStartY = 180.f;
+
+    for (int i = 0; i < static_cast<int>(lines.size()) && i < kMaxLines; i++)
+    {
+        sf::Text t(GetContext().fonts->Get(FontID::kMain));
+        t.setString(lines[i]);
+        t.setCharacterSize(18);
+        t.setPosition(sf::Vector2f(700.f, kStartY + i * 30.f));
+
+        std::string info = "Player " + std::to_string(local_id) + " Won";
+
+        if (local_id > 0 && lines[i].find(info) != std::string::npos)
+        {
+            t.setFillColor(sf::Color::Yellow);
+
+        }
+        else
+        {
+            t.setFillColor(sf::Color::White);
+        }
+
+        m_results_text.push_back(std::move(t));
+    }
 }
 
 void MenuState::Draw()
@@ -116,7 +137,8 @@ void MenuState::Draw()
 	window.draw(m_scoreboard_bg);
 	window.draw(m_personal_wins);
 	window.draw(m_scoreboard_title);
-	window.draw(m_results_text);
+	for (const auto& text : m_results_text)
+        window.draw(text);
 
 }
 

@@ -1,0 +1,3 @@
+Game 1: Player 1 wins with 31 points
+Game 2: Player 1 wins with 30 points
+Game 3: Player 1 wins with 30 points

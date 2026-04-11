@@ -75,6 +75,9 @@ private:
 	uint8_t m_aircraft_identifier_counter;
 	bool m_waiting_thread_end;
 
+	sf::Time m_crate_spawn_timer;
+	sf::Time m_crate_spawn_interval;
+
 	bool m_winner_announced; //winner announcement for server
 };
 

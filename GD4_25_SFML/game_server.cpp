@@ -4,6 +4,7 @@
 #include <SFML/Network/Packet.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <iostream>
+#include "pointbox.hpp"
 
 // ---------------------------------------------------------------------------
 // Construction / destruction
@@ -22,6 +23,8 @@ GameServer::GameServer(sf::Vector2f battlefield_size)
     , m_aircraft_identifier_counter(1)
     , m_waiting_thread_end(false)
     , m_winner_announced(false)
+	, m_crate_spawn_timer(sf::Time::Zero)
+	, m_crate_spawn_interval(sf::seconds(1.f))
 {
     m_listener_socket.setBlocking(false);
     m_peers[0].reset(new RemotePeer());
@@ -116,6 +119,24 @@ void GameServer::Tick()
 {
     // Broadcast a fresh state snapshot to all clients
     UpdateClientState();
+
+	const sf::Time tick_rate = sf::seconds(1.f / 20.f);
+	m_crate_spawn_timer += tick_rate;
+
+    if (m_crate_spawn_timer >= m_crate_spawn_interval)
+    {
+        m_crate_spawn_timer = sf::Time::Zero;
+		m_crate_spawn_interval = sf::seconds(1.f + static_cast<float>(std::rand() % 5)); // Random interval between 1 and 5 seconds
+
+        uint8_t type_idx = static_cast<uint8_t>(Utility::RandomInt(static_cast<int>(PointBoxType::kPointBoxCount)));
+        float spawn_x = 50.f + static_cast<float>(std::rand() % static_cast<int>(m_battlefield_rect.size.x) - 100.f);
+
+        sf::Packet packet;
+        packet << static_cast<uint8_t>(Server::PacketType::kSpawnPickup)
+            << type_idx
+            << spawn_x;
+		SendToAll(packet);
+    }
 
     // ---- Crate Scott win condition: first aircraft to reach 30 points ----
     if (!m_winner_announced)

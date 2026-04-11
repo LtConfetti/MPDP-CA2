@@ -308,10 +308,11 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         Aircraft* aircraft = m_world.AddAircraft(id);
         aircraft->setPosition(pos);
 
+        GetContext().player->SetIdentifier(id); // Store local identifier on player object
+
         // Local player: give them the appropriate key binding
         // id==1 → keys1 (WASD+Space), id==2 → keys2 (IJKL+RShift)
-        const KeyBinding* binding = (id == 1)
-            ? GetContext().keys1 : GetContext().keys2;
+        const KeyBinding* binding = GetContext().keys1;
 
         m_players[id].reset(new Player(&m_socket, id, binding));
         m_local_player_identifiers.push_back(id);
@@ -470,16 +471,57 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
                 }
             }
         }
+      
+        GetContext().player->SetWinnerID(winner_id); // storing winner ID and status on the shared player object so GameOverState can display the correct message
+        GetContext().player->SetMissionStatus(MissionStatus::kPlayerXWins);
 
-        // Use the shared Context::player to carry the winner status into GameOverState
-        if (winner_id == 1)
-            GetContext().player->SetMissionStatus(MissionStatus::kPlayer1Wins);
-        else if (winner_id == 2)
-            GetContext().player->SetMissionStatus(MissionStatus::kPlayer2Wins);
-        else
-            GetContext().player->SetMissionStatus(MissionStatus::kMissionSuccess);
+        {
+            int game_number = 1; 
+
+			std::ifstream infile("results.txt");
+            std::string count_line;
+            while(std::getline(infile, count_line))
+                if (!count_line.empty())
+                {
+                    game_number++;
+                }
+			std::ofstream results_file("results.txt", std::ios::app);
+
+			if (results_file.is_open())
+            {
+                results_file << "Game " << game_number << ": Player " << +winner_id << " wins with " << best << " points\n";
+                results_file.close();
+            }
+        }
+
+        {
+			uint8_t local_id = GetContext().player->GetIdentifier();
+            if (local_id == winner_id)
+            {
+                int total_wins = 0;
+                {
+                    std::ifstream stats("player_wins.txt");
+					stats >> total_wins;
+                }
+
+				std::ofstream stats("player_wins.txt");
+                if (stats.is_open())
+                {
+                    stats << (total_wins + 1) << "\n";
+				}
+            }
+        }
 
         RequestStackPush(StateID::kGameOver);
+    }
+    break;
+
+    case Server::PacketType::kSpawnPickup:
+    {
+        uint8_t type_idx;
+        float   spawn_x;
+        packet >> type_idx >> spawn_x;
+        m_world.SpawnNetworkPointBox(type_idx, spawn_x);
     }
     break;
 

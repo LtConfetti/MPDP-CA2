@@ -21,17 +21,17 @@ public:
 
 	struct Context
 	{ 
-		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, SoundPlayer& sound, KeyBinding& keys1, KeyBinding& keys2, uint8_t& winner_id);
+		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, Player& player, SoundPlayer& sound, KeyBinding& keys1, KeyBinding& keys2);
 		//Ben Arrowsmith
 
 		//TODO unique_ptr rather than raw pointers here?
 		sf::RenderWindow* window;
 		TextureHolder* textures;
 		FontHolder* fonts;
+		Player* player;
 		SoundPlayer* sounds; //Ben Arrowsmith
 		KeyBinding* keys1;    // P1 keys
 		KeyBinding* keys2;    // P2 keys 
-		uint8_t winner_id = 0; //identify ID for winning player, default 0 for no winner
 
 	};
 

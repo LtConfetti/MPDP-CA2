@@ -13,7 +13,8 @@ namespace Server
 		kPlayerDisconnect,      // A player left - remove their aircraft
 		kSpawnSelf,             // Tells this client its own identifier + spawn position
 		kUpdateClientState,     // Periodic position + score sync from server to all clients
-		kMissionSuccess         // Someone hit 30 points - game over
+		kMissionSuccess,        // Someone hit 30 points - game over
+		kSpawnPickup              // Spawn a pickup at a position
 	};
 }
 

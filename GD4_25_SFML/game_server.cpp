@@ -121,6 +121,7 @@ void GameServer::Tick()
     static sf::Clock tick_report_clock;
     tick_count++;
     if (tick_report_clock.getElapsedTime() >= sf::seconds(1.f)) {
+        //AI Ben Arrowsmith
         std::cout << "[SERVER] [TICK] Tick rate observed: " << tick_count << " ticks/sec\n\n";
         tick_count = 0;
         tick_report_clock.restart();
@@ -383,7 +384,7 @@ void GameServer::BroadcastMessage(const std::string& message)
 
 void GameServer::SendToAll(sf::Packet& packet)
 {
-    //AI
+    //AI Ben Arrowsmith
     std::size_t pkt_size = packet.getDataSize();
     std::cout << "[SERVER] [PACKET] SendToAll packet size=" << pkt_size << " bytes\n\n";
 

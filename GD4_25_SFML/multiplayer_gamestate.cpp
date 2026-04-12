@@ -179,6 +179,7 @@ bool MultiplayerGameState::Update(sf::Time dt)
             static sf::Clock send_report_clock;
             sends_count++;
             if (send_report_clock.getElapsedTime() >= sf::seconds(1.f)) {
+                //AI Ben Arrowsmith
                 std::cout << "[CLIENT] [SENDS] Sends observed: " << sends_count << " sends/sec\n\n";
                 sends_count = 0;
                 send_report_clock.restart();
@@ -195,7 +196,7 @@ bool MultiplayerGameState::Update(sf::Time dt)
                         << a->GetScore();
                 }
             }
-            //AI
+            //AI Ben Arrowsmith
             std::size_t pkt_size = state_packet.getDataSize();
             std::cout << "[CLIENT] [PACKET] Sending state packet size=" << pkt_size << " bytes\n\n";
             m_socket.send(state_packet);

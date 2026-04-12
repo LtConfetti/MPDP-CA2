@@ -4,6 +4,7 @@
 #include <SFML/Network/Packet.hpp>
 #include <SFML/System/Sleep.hpp>
 #include <iostream>
+#include <cmath>
 #include "pointbox.hpp"
 
 // ---------------------------------------------------------------------------
@@ -23,8 +24,14 @@ GameServer::GameServer(sf::Vector2f battlefield_size)
     , m_aircraft_identifier_counter(1)
     , m_waiting_thread_end(false)
     , m_winner_announced(false)
-	, m_crate_spawn_timer(sf::Time::Zero)
-	, m_crate_spawn_interval(sf::seconds(1.f))
+	, m_game_seconds_left(75.f) //need to add +15 seconds to account for lobby countdown, since game timer starts ticking immediately after lobby ends
+    , m_last_timer_broadcast(75)
+    , m_game_over_sent(false)
+    , m_lobby_active(true)
+    , m_lobby_seconds_left(15.f)
+    , m_last_broadcast_second(15)
+    , m_crate_spawn_timer(sf::Time::Zero)
+    , m_crate_spawn_interval(sf::seconds(1.f))
 {
     m_listener_socket.setBlocking(false);
     m_peers[0].reset(new RemotePeer());
@@ -96,8 +103,85 @@ void GameServer::ExecutionThread()
     sf::Time       tick_time = sf::Time::Zero;
     sf::Clock      tick_clock;
 
+    sf::Clock lobby_clock;
+    sf::Clock game_timer_clock;
+
     while (!m_waiting_thread_end)
     {
+        // ---- Lobby countdown ----
+        if (m_lobby_active)
+        {
+            float elapsed = lobby_clock.restart().asSeconds();
+            m_lobby_seconds_left -= elapsed;
+
+            int whole = static_cast<int>(std::ceil(m_lobby_seconds_left));
+            if (whole < m_last_broadcast_second && m_connected_players > 0)
+            {
+                m_last_broadcast_second = whole;
+                // Broadcast remaining seconds to all clients
+                sf::Packet countdown_packet;
+                countdown_packet << static_cast<uint8_t>(Server::PacketType::kLobbyCountdown)
+                    << static_cast<uint8_t>(std::max(0, whole))
+                    << static_cast<uint8_t>(m_connected_players);
+                SendToAll(countdown_packet);
+            }
+
+            if (m_lobby_seconds_left <= 0.f)
+            {
+                m_lobby_active = false;
+                SetListening(false); // stop accepting new connections
+                sf::Packet done_packet;
+                done_packet << static_cast<uint8_t>(Server::PacketType::kLobbyDone);
+                SendToAll(done_packet);
+            }
+        }
+        else
+        {
+            lobby_clock.restart(); // keep clock fresh so no huge jump if lobby re-enabled
+        }
+
+        // ---- Game timer (runs only after lobby is done) ----
+        if (!m_lobby_active && !m_game_over_sent)
+        {
+            float elapsed = game_timer_clock.restart().asSeconds();
+            m_game_seconds_left -= elapsed;
+
+            int whole = static_cast<int>(std::ceil(m_game_seconds_left));
+            if (whole < m_last_timer_broadcast && m_connected_players > 0)
+            {
+                m_last_timer_broadcast = whole;
+                sf::Packet timer_packet;
+                timer_packet << static_cast<uint8_t>(Server::PacketType::kGameTimer)
+                    << static_cast<uint8_t>(std::max(0, whole));
+                SendToAll(timer_packet);
+            }
+
+            if (m_game_seconds_left <= 0.f)
+            {
+                m_game_over_sent = true;
+                // Find the player with the highest score
+                uint8_t winner_id = 0;
+                int     best = -1;
+                for (const auto& kv : m_aircraft_info)
+                {
+                    if (kv.second.m_score > best)
+                    {
+                        best = kv.second.m_score;
+                        winner_id = kv.first;
+                    }
+                }
+                sf::Packet end_packet;
+                end_packet << static_cast<uint8_t>(Server::PacketType::kMissionSuccess)
+                    << winner_id;  // pack winner ID so clients don't have to guess
+                SendToAll(end_packet);
+                std::cout << "Server: Time up! Winner is aircraft " << +winner_id << "\n";
+            }
+        }
+        else if (!m_lobby_active)
+        {
+            game_timer_clock.restart();
+        }
+
         HandleIncomingConnections();
         HandleIncomingPackets();
 
@@ -117,26 +201,16 @@ void GameServer::ExecutionThread()
 
 void GameServer::Tick()
 {
-    static int tick_count = 0;
-    static sf::Clock tick_report_clock;
-    tick_count++;
-    if (tick_report_clock.getElapsedTime() >= sf::seconds(1.f)) {
-        //AI Ben Arrowsmith
-        std::cout << "[SERVER] [TICK] Tick rate observed: " << tick_count << " ticks/sec\n\n";
-        tick_count = 0;
-        tick_report_clock.restart();
-    }
-
     // Broadcast a fresh state snapshot to all clients
     UpdateClientState();
 
-	const sf::Time tick_rate = sf::seconds(1.f / 20.f);
-	m_crate_spawn_timer += tick_rate;
+    const sf::Time tick_rate = sf::seconds(1.f / 20.f);
+    m_crate_spawn_timer += tick_rate;
 
-    if (m_crate_spawn_timer >= m_crate_spawn_interval)
+    if (!m_lobby_active && m_crate_spawn_timer >= m_crate_spawn_interval)
     {
         m_crate_spawn_timer = sf::Time::Zero;
-		m_crate_spawn_interval = sf::seconds(1.f + static_cast<float>(std::rand() % 5)); // Random interval between 1 and 5 seconds
+        m_crate_spawn_interval = sf::seconds(0.5f + static_cast<float>(std::rand() % 2)); // 0.5 to 1.5 seconds between boxes
 
         uint8_t type_idx = static_cast<uint8_t>(Utility::RandomInt(static_cast<int>(PointBoxType::kPointBoxCount)));
         float spawn_x = 50.f + static_cast<float>(std::rand() % static_cast<int>(m_battlefield_rect.size.x) - 100.f);
@@ -145,25 +219,10 @@ void GameServer::Tick()
         packet << static_cast<uint8_t>(Server::PacketType::kSpawnPickup)
             << type_idx
             << spawn_x;
-		SendToAll(packet);
+        SendToAll(packet);
     }
 
-    // ---- Crate Scott win condition: first aircraft to reach 30 points ----
-    if (!m_winner_announced)
-    {
-        for (const auto& kv : m_aircraft_info)
-        {
-            if (kv.second.m_score >= 30)
-            {
-                sf::Packet packet;
-                packet << static_cast<uint8_t>(Server::PacketType::kMissionSuccess);
-                SendToAll(packet);
-                m_winner_announced = true;
-                std::cout << "Server: Aircraft " << +kv.first << " reached 30 - sending MissionSuccess\n";
-                break;
-            }
-        }
-    }
+    // Win condition is now time-based (60s), handled in ExecutionThread
 }
 
 sf::Time GameServer::Now() const
@@ -273,10 +332,15 @@ void GameServer::HandleIncomingConnections()
         != sf::TcpListener::Status::Done)
         return;
 
-    // Assign spawn position: P1 centre-left, P2 slightly right (mirrors local game)
-    float spawn_x = m_battlefield_rect.size.x / 2.f
-        + static_cast<float>(m_connected_players) * 100.f;
-    float spawn_y = m_battlefield_rect.size.y - 200.f;
+    // Spread players across the bottom of the world
+    // World is 3000 tall, camera is battlefield_rect.size.y tall
+    // Spawn Y matches world.cpp: world_height - camera_height/2
+    const float kWorldHeight = 3000.f;
+    const float kCameraHeight = m_battlefield_rect.size.y;
+    float spawn_y = kWorldHeight - kCameraHeight / 2.f;
+    // Spread horizontally so players don't overlap
+    float spawn_x = 80.f + static_cast<float>(m_connected_players)
+        * (m_battlefield_rect.size.x - 160.f) / 15.f;
 
     m_aircraft_info[m_aircraft_identifier_counter].m_position = { spawn_x, spawn_y };
     m_aircraft_info[m_aircraft_identifier_counter].m_hitpoints = 100;
@@ -384,11 +448,6 @@ void GameServer::BroadcastMessage(const std::string& message)
 
 void GameServer::SendToAll(sf::Packet& packet)
 {
-    //AI Ben Arrowsmith
-    std::size_t pkt_size = packet.getDataSize();
-    std::cout << "[SERVER] [PACKET] SendToAll packet size=" << pkt_size << " bytes\n\n";
-
-
     for (std::size_t i = 0; i < m_connected_players; ++i)
         if (m_peers[i]->m_ready)
             m_peers[i]->m_socket.send(packet);

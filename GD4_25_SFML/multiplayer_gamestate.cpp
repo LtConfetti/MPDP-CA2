@@ -174,16 +174,6 @@ bool MultiplayerGameState::Update(sf::Time dt)
             sf::Packet state_packet;
             state_packet << static_cast<uint8_t>(Client::PacketType::kStateUpdate);
             state_packet << static_cast<uint8_t>(m_local_player_identifiers.size());
-            //AI
-            static int sends_count = 0;
-            static sf::Clock send_report_clock;
-            sends_count++;
-            if (send_report_clock.getElapsedTime() >= sf::seconds(1.f)) {
-                //AI Ben Arrowsmith
-                std::cout << "[CLIENT] [SENDS] Sends observed: " << sends_count << " sends/sec\n\n";
-                sends_count = 0;
-                send_report_clock.restart();
-            }
 
             for (uint8_t id : m_local_player_identifiers)
             {
@@ -196,10 +186,6 @@ bool MultiplayerGameState::Update(sf::Time dt)
                         << a->GetScore();
                 }
             }
-            //AI Ben Arrowsmith
-            std::size_t pkt_size = state_packet.getDataSize();
-            std::cout << "[CLIENT] [PACKET] Sending state packet size=" << pkt_size << " bytes\n\n";
-            m_socket.send(state_packet);
             m_socket.send(state_packet);
             m_tick_clock.restart();
         }
@@ -465,55 +451,41 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
     {
         std::cout << "Client: MissionSuccess received\n";
 
-        // Find which aircraft has >= 30 points to decide the winner label
+        // Server sends the winner ID directly - read it from the packet
         uint8_t winner_id = 0;
-        int     best = -1;
-        for (uint8_t id : m_local_player_identifiers)
-        {
-            if (Aircraft* a = m_world.GetAircraft(id))
-            {
-                if (a->GetScore() > best)
-                {
-                    best = a->GetScore();
-                    winner_id = id;
-                }
-            }
-        }
-        // Also check remote aircraft
-        // (we iterate all known players)
+        packet >> winner_id;
+
+        // Also get best score for the results line
+        int best = -1;
         for (auto& pair : m_players)
-        {
             if (Aircraft* a = m_world.GetAircraft(pair.first))
-            {
-                if (a->GetScore() > best)
-                {
-                    best = a->GetScore();
-                    winner_id = pair.first;
-                }
-            }
-        }
+                if (a->GetScore() > best) best = a->GetScore();
+        for (uint8_t id : m_local_player_identifiers)
+            if (Aircraft* a = m_world.GetAircraft(id))
+                if (a->GetScore() > best) best = a->GetScore();
 
         GetContext().player->SetWinnerID(winner_id); // storing winner ID and status on the shared player object so GameOverState can display the correct message
         GetContext().player->SetMissionStatus(MissionStatus::kPlayerXWins);
 
+        // ---- Persistence: append result to results.txt ----
         {
+            // Count existing entries so we can number this game
             int game_number = 1;
             {
                 std::ifstream count_file("results.txt");
                 std::string count_line;
                 while (std::getline(count_file, count_line))
-                    if (!count_line.empty())
-                    {
-                        ++game_number;
-                    }
+                    if (!count_line.empty()) ++game_number;
             }
             std::ofstream results_file("results.txt", std::ios::app);
             if (results_file.is_open())
             {
-                results_file << "Game: " << game_number << ": Player " << +winner_id << " Won\n";
+                results_file << "Game :" << game_number<< ": Player " << +winner_id << " Won with " << best << " points\n";
             }
         }
 
+        // ---- Persistence: update personal win count in player_stats.txt ----
+        // Only the winning client increments their own counter
         {
             uint8_t local_id = GetContext().player->GetIdentifier();
             if (local_id == winner_id)
@@ -521,10 +493,11 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
                 // Read existing win count
                 int total_wins = 0;
                 {
-                    std::ifstream stats_in("player_wins.txt");
+                    std::ifstream stats_in("player_stats.txt");
                     stats_in >> total_wins;
                 }
-                std::ofstream stats_out("player_wins.txt", std::ios::trunc);
+                // Write incremented count back
+                std::ofstream stats_out("player_stats.txt", std::ios::trunc);
                 if (stats_out.is_open())
                     stats_out << (total_wins + 1) << "\n";
             }
@@ -540,6 +513,36 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         float   spawn_x;
         packet >> type_idx >> spawn_x;
         m_world.SpawnNetworkPointBox(type_idx, spawn_x);
+    }
+    break;
+
+    // ---- Game timer tick from server ----
+    case Server::PacketType::kGameTimer:
+    {
+        uint8_t secs;
+        packet >> secs;
+        std::string msg = "Time remaining: " + std::to_string(secs) + "s";
+        m_broadcasts.clear();
+        m_broadcasts.push_back(msg);
+        m_broadcast_text.setString(msg);
+        Utility::CentreOrigin(m_broadcast_text);
+        m_broadcast_elapsed_time = sf::Time::Zero;
+    }
+    break;
+
+    // ---- Lobby countdown tick from server ----
+    case Server::PacketType::kLobbyCountdown:
+    {
+        uint8_t secs, players;
+        packet >> secs >> players;
+        std::string msg = "Game starts in: " + std::to_string(secs)
+            + "s  |  Players: " + std::to_string(players);
+        // Reuse the broadcast system to display the countdown on screen
+        m_broadcasts.clear();
+        m_broadcasts.push_back(msg);
+        m_broadcast_text.setString(msg);
+        Utility::CentreOrigin(m_broadcast_text);
+        m_broadcast_elapsed_time = sf::Time::Zero;
     }
     break;
 

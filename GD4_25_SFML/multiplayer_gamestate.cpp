@@ -174,6 +174,15 @@ bool MultiplayerGameState::Update(sf::Time dt)
             sf::Packet state_packet;
             state_packet << static_cast<uint8_t>(Client::PacketType::kStateUpdate);
             state_packet << static_cast<uint8_t>(m_local_player_identifiers.size());
+            //AI
+            static int sends_count = 0;
+            static sf::Clock send_report_clock;
+            sends_count++;
+            if (send_report_clock.getElapsedTime() >= sf::seconds(1.f)) {
+                std::cout << "[CLIENT] [SENDS] Sends observed: " << sends_count << " sends/sec\n\n";
+                sends_count = 0;
+                send_report_clock.restart();
+            }
 
             for (uint8_t id : m_local_player_identifiers)
             {
@@ -186,6 +195,10 @@ bool MultiplayerGameState::Update(sf::Time dt)
                         << a->GetScore();
                 }
             }
+            //AI
+            std::size_t pkt_size = state_packet.getDataSize();
+            std::cout << "[CLIENT] [PACKET] Sending state packet size=" << pkt_size << " bytes\n\n";
+            m_socket.send(state_packet);
             m_socket.send(state_packet);
             m_tick_clock.restart();
         }

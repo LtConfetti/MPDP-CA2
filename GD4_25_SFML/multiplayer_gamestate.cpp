@@ -520,10 +520,10 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
                 // Read existing win count
                 int total_wins = 0;
                 {
-                    std::ifstream stats_in("player_stats.txt");
+                    std::ifstream stats_in("player_wins.txt");
                     stats_in >> total_wins;
                 }
-                std::ofstream stats_out("player_stats.txt", std::ios::trunc);
+                std::ofstream stats_out("player_wins.txt", std::ios::trunc);
                 if (stats_out.is_open())
                     stats_out << (total_wins + 1) << "\n";
             }

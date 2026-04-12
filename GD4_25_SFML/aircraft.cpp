@@ -160,9 +160,9 @@ void Aircraft::UpdateCurrent(sf::Time dt, CommandQueue& commands)
 	//Check if bullets were fired
 	CheckProjectileLaunch(dt, commands);
 
-	//if (IsAllied() || IsPlayer2()) {
-	//	UpdateAnimation(dt);
-	//}
+	if (IsAllied() || IsPlayer2()) {
+		UpdateAnimation(dt);
+	}
 }
 
 void Aircraft::CheckProjectileLaunch(sf::Time dt, CommandQueue& commands)

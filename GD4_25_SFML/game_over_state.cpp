@@ -23,7 +23,7 @@ GameOverState::GameOverState(StateStack& stack, Context context)
             m_game_over_text.setFillColor(sf::Color::Green);
         }
         else {
-            m_game_over_text.setString("You Lose!");
+            m_game_over_text.setString("Player " + std::to_string(winner_id) + " wins the round!");
             m_game_over_text.setCharacterSize(50);
             m_game_over_text.setFillColor(sf::Color::Red);
         }

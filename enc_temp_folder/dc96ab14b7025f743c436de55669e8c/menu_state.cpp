@@ -101,7 +101,7 @@ void MenuState::LoadResults()
             lines.push_back(line);
         }
 
-	const int kMaxLines = 5;
+	const int kMaxLines = 1;
 	const float kStartY = 180.f;
 
     for (int i = 0; i < static_cast<int>(lines.size()) && i < kMaxLines; i++)

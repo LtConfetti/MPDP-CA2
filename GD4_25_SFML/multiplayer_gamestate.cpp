@@ -322,7 +322,14 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         Aircraft* aircraft = m_world.AddAircraft(id);
         aircraft->setPosition(pos);
 
-        GetContext().player->SetIdentifier(id); // Store local identifier on player object
+        GetContext().player->SetIdentifier(id);         // Store local identifier on player object
+
+        // Persist this machine's player ID so the menu can highlight their wins
+        {
+            std::ofstream id_file("player_id.txt", std::ios::trunc);
+            if (id_file.is_open())
+                id_file << +id << "\n";
+        }
 
         // Local player: give them the appropriate key binding
         // id==1 → keys1 (WASD+Space), id==2 → keys2 (IJKL+RShift)
@@ -485,44 +492,41 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
                 }
             }
         }
-      
+
         GetContext().player->SetWinnerID(winner_id); // storing winner ID and status on the shared player object so GameOverState can display the correct message
         GetContext().player->SetMissionStatus(MissionStatus::kPlayerXWins);
 
         {
-            int game_number = 1; 
-
-			std::ifstream infile("results.txt");
-            std::string count_line;
-            while(std::getline(infile, count_line))
-                if (!count_line.empty())
-                {
-                    game_number++;
-                }
-			std::ofstream results_file("results.txt", std::ios::app);
-
-			if (results_file.is_open())
+            int game_number = 1;
             {
-                results_file << "Game " << game_number << ": Player " << +winner_id << " wins with " << best << " points\n";
-                results_file.close();
+                std::ifstream count_file("results.txt");
+                std::string count_line;
+                while (std::getline(count_file, count_line))
+                    if (!count_line.empty())
+                    {
+                        ++game_number;
+                    }
+            }
+            std::ofstream results_file("results.txt", std::ios::app);
+            if (results_file.is_open())
+            {
+                results_file << "Game: " << game_number << ": Player " << +winner_id << " Won\n";
             }
         }
 
         {
-			uint8_t local_id = GetContext().player->GetIdentifier();
+            uint8_t local_id = GetContext().player->GetIdentifier();
             if (local_id == winner_id)
             {
+                // Read existing win count
                 int total_wins = 0;
                 {
-                    std::ifstream stats("player_wins.txt");
-					stats >> total_wins;
+                    std::ifstream stats_in("player_wins.txt");
+                    stats_in >> total_wins;
                 }
-
-				std::ofstream stats("player_wins.txt");
-                if (stats.is_open())
-                {
-                    stats << (total_wins + 1) << "\n";
-				}
+                std::ofstream stats_out("player_wins.txt", std::ios::trunc);
+                if (stats_out.is_open())
+                    stats_out << (total_wins + 1) << "\n";
             }
         }
 

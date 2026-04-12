@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <string>
+#include <vector>
 
 class MenuState : public State
 {
@@ -23,7 +24,8 @@ private:
 	sf::RectangleShape m_scoreboard_bg;
 	sf::Text m_scoreboard_title; 
 	sf::Text m_personal_wins; //Personal Wins counted
-	sf::Text m_results_text; //Match History e.g. "Game #1: Player 1 Won"
-
+	std::vector<sf::Text> m_results_text; //Match History e.g. "Game #1: Player 1 Won"
+	int m_local_wins; //Cached personal wins so LoadResults can identify winning lines
+	
 };
 

@@ -11,6 +11,12 @@ SettingsState::SettingsState(StateStack& stack, Context context)
     AddButtonLabel(Action::kMoveRight, 80.f, 250.f, "P1 Move Right", context);
     AddButtonLabel(Action::kMoveLeft, 80.f, 300.f, "P1 Move Left", context);
     AddButtonLabel(Action::kBulletFire, 80.f, 350.f, "P1 Fire", context);
+
+    AddButtonLabel(Action::kMoveUp, 320.f, 150.f, "P2 Move Up", context);
+    AddButtonLabel(Action::kMoveDown, 320.f, 200.f, "P2 Move Down", context);
+    AddButtonLabel(Action::kMoveRight, 320.f, 250.f, "P2 Move Right", context);
+    AddButtonLabel(Action::kMoveLeft, 320.f, 300.f, "P2 Move Left", context);
+    AddButtonLabel(Action::kBulletFire, 320.f, 350.f, "P2 Fire", context);
     
 
     UpdateLabels();
@@ -50,6 +56,21 @@ bool SettingsState::HandleEvent(const sf::Event& event)
             {
                 GetContext().keys1->AssignKey(static_cast<Action>(action), key_released->scancode);
                 m_binding_buttons[action]->Deactivate();
+            }
+            break;
+        }
+    }
+
+        for (std::size_t action = 0; action < static_cast<int>(Action::kActionCount); ++action)
+    {
+        if (m_binding_buttons2[action]->IsActive())
+        {
+            is_key_binding = true;
+            const auto* key_released = event.getIf<sf::Event::KeyReleased>();
+            if (key_released)
+            {
+                GetContext().keys2->AssignKey(static_cast<Action>(action), key_released->scancode);
+                m_binding_buttons2[action]->Deactivate();
             }
             break;
         }

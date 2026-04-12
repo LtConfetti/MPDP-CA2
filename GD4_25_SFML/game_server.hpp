@@ -78,6 +78,16 @@ private:
 	sf::Time m_crate_spawn_timer;
 	sf::Time m_crate_spawn_interval;
 
-	bool m_winner_announced; //winner announcement for server
+	bool  m_winner_announced;
+
+	// 60-second game timer
+	float m_game_seconds_left;      // counts down from 60
+	int   m_last_timer_broadcast;   // last whole second we broadcast
+	bool  m_game_over_sent;         // prevent double kMissionSuccess
+
+	// Lobby countdown
+	bool     m_lobby_active;      // true while countdown is running
+	float    m_lobby_seconds_left; // counts down from 15 to 0
+	int      m_last_broadcast_second; // tracks which whole second we last broadcast
 };
 

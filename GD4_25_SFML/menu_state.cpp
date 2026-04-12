@@ -116,6 +116,7 @@ void MenuState::LoadResults()
         if (local_id > 0 && lines[i].find(info) != std::string::npos)
         {
             t.setFillColor(sf::Color::Yellow);
+            std::string info = "You Won with ";
 
         }
         else

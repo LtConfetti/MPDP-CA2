@@ -14,7 +14,10 @@ namespace Server
 		kSpawnSelf,             // Tells this client its own identifier + spawn position
 		kUpdateClientState,     // Periodic position + score sync from server to all clients
 		kMissionSuccess,        // Someone hit 30 points - game over
-		kSpawnPickup              // Spawn a pickup at a position
+		kSpawnPickup,             // Spawn a pickup at a position
+		kLobbyCountdown,          // Server sends remaining lobby seconds to all clients
+		kLobbyDone,               // Server tells all clients to start the game
+		kGameTimer                // Server broadcasts remaining game seconds every second
 	};
 }
 

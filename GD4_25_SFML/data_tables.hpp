@@ -3,7 +3,6 @@
 #include <SFML/System/Time.hpp>
 #include <functional>
 #include "aircraft.hpp"
-//John Nally D00258753
 
 struct Direction
 {

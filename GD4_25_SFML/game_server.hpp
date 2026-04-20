@@ -8,6 +8,9 @@
 #include <cstdint>
 #include <map>
 
+//This class was made with Claude AI
+// John Nally D00258753
+//functions that were written or heavily edited by users will be marked with a comment in the function headers, but all functions were lightly fixed to fix bugs in the AI's code. 
 class GameServer
 {
 public:
@@ -32,7 +35,7 @@ private:
 	{
 		sf::Vector2f m_position;
 		uint8_t m_hitpoints;
-		int m_score; //score for players
+		int m_score; //John Nally D00258753: Added score tracking to server for win condition and client UI
 	};
 
 	typedef std::unique_ptr<RemotePeer> PeerPtr;
@@ -80,7 +83,7 @@ private:
 
 	bool  m_winner_announced;
 
-	// 60-second game timer
+	// 60-second game timer John Nally D00258753 
 	float m_game_seconds_left;      // counts down from 60
 	int   m_last_timer_broadcast;   // last whole second we broadcast
 	bool  m_game_over_sent;         // prevent double kMissionSuccess

@@ -1,6 +1,6 @@
 #pragma once
-//Ben Arrowsmith D00257746
 //John Nally D00258753
+//Difference Between CA1, added a category for the network to allow sending commands to all clients in the network
 enum class ReceiverCategories
 {
 	kNone = 0,

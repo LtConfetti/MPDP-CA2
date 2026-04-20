@@ -1,5 +1,0 @@
-Game: 1: Player 1 Won
-Game: 2: Player 1 Won
-Game :3: Player 2 Won with 33 points
-Game :4: Player 2 Won with 33 points
-Game :5: Player 1 Won with 9 points

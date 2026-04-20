@@ -9,9 +9,6 @@
 
 #include <list>
 
-//Ben Arrowsmith D00257746
-//Created Entire header from Johns code
-
 class SoundPlayer
 {
 public:

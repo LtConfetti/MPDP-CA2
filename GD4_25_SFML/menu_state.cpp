@@ -67,7 +67,7 @@ MenuState::MenuState(StateStack& stack, Context context) : State(stack, context)
 
 	int total_wins = 0;
     {
-		std::ifstream stats("player_wins.txt");
+		std::ifstream stats("player_stats.txt");
 		stats >> total_wins;
     }
 
@@ -116,12 +116,7 @@ void MenuState::LoadResults()
         if (local_id > 0 && lines[i].find(info) != std::string::npos)
         {
             t.setFillColor(sf::Color::Yellow);
-            std::string info = "You Won with ";
 
-        }
-        else
-        {
-            t.setFillColor(sf::Color::White);
         }
 
         m_results_text.push_back(std::move(t));

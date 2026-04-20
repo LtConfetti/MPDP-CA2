@@ -1,5 +1,4 @@
 #pragma once
-//John Nally D00258753
 namespace sf
 {
 	class RenderTarget;

@@ -11,8 +11,8 @@
 #include "bloom_effect.hpp"
 #include "network_node.hpp"
 
-//Ben Arrowsmith D00257746
-//John Nally D00258753
+//Claude AI was used to rewrite this
+//Setup networking stuff for multiplayer,
 class World
 {
 public:
@@ -22,13 +22,13 @@ public:
 
 	CommandQueue& GetCommandQueue();
 	//local game setup
-	bool HasPlayerReachedPoints() const; //John Nally: New Win Condition for Points
-	int GetPlayer1Score() const; //John Nally: Player1 Get Points
-	int GetPlayer2Score() const; //John Nally: Player 2 Get Points
-	int GetWinningPlayer() const; //John Nally: Winner for GameState
+	bool HasPlayerReachedPoints() const; 
+	int GetPlayer1Score() const; 
+	int GetPlayer2Score() const; 
+	int GetWinningPlayer() const; 
 
 	//network game setup
-	Aircraft* AddAircraft(uint8_t identifier);
+	Aircraft* AddAircraft(uint8_t identifier, bool is_local = false);
 	void RemoveAircraft(uint8_t identifier);
 	Aircraft* GetAircraft(uint8_t identifier) const;
 	bool PollGameAction(GameActions::Action& out);

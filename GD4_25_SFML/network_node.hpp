@@ -3,6 +3,8 @@
 #include "network_protocol.hpp"
 
 #include <queue>
+
+//added from the latest repo onm John Loane Project
 class NetworkNode : public SceneNode
 {
 public:

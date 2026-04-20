@@ -7,8 +7,8 @@
 #include "command_queue.hpp"
 #include "animation.hpp"
 
-//Ben Arrowsmith D00257746
 //John Nally D00258753
+//Difference Between CA1, added a unique identifier to each aircraft for network syncing
 
 class Aircraft : public Entity
 {
@@ -29,7 +29,7 @@ public:
 	sf::FloatRect GetBoundingRect() const override;
 	bool IsMarkedForRemoval() const override;
 
-	void PlayLocalSound(CommandQueue& commands, SoundEffect effect); //Ben Arrowsmith
+	void PlayLocalSound(CommandQueue& commands, SoundEffect effect); 
 
 	uint8_t GetIdentifier() const;
 	void SetIdentifier(uint8_t identifier);
@@ -40,7 +40,7 @@ private:
 
 	void CheckProjectileLaunch(sf::Time dt, CommandQueue& commands);
 	bool IsAllied() const;
-	bool IsPlayer2() const; //Ben Arrowsmith
+	bool IsPlayer2() const; 
 
 
 

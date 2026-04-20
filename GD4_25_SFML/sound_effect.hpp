@@ -1,7 +1,5 @@
 #pragma once
 
-//Ben Arrowsmith
-//Created from Johns code
 enum class SoundEffect
 {
 	kAlliedGunfire,

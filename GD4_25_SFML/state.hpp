@@ -2,14 +2,11 @@
 #include <memory>
 #include "resource_identifiers.hpp"
 #include "player.hpp"
-#include "player2.hpp" //Ben Arrowsmith
+#include "player2.hpp" 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "stateid.hpp"
-#include "sound_player.hpp" //Ben Arrowsmith
+#include "sound_player.hpp" 
 #include "key_binding.hpp"
-
-//Ben Arrowsmith D00257746
-//John Nally D00258753
 
 class StateStack;
 
@@ -22,14 +19,13 @@ public:
 	struct Context
 	{ 
 		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, Player& player, SoundPlayer& sound, KeyBinding& keys1, KeyBinding& keys2);
-		//Ben Arrowsmith
 
 		//TODO unique_ptr rather than raw pointers here?
 		sf::RenderWindow* window;
 		TextureHolder* textures;
 		FontHolder* fonts;
 		Player* player;
-		SoundPlayer* sounds; //Ben Arrowsmith
+		SoundPlayer* sounds; 
 		KeyBinding* keys1;    // P1 keys
 		KeyBinding* keys2;    // P2 keys 
 

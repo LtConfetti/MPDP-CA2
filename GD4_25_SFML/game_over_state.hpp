@@ -1,7 +1,8 @@
 #pragma once
 #include "state.hpp"
 #include <SFML/Graphics/Text.hpp>
-
+//John Nally D00258753
+//Difference Between CA1, added a new state for the end of the game, now displays a win or lose text for networked players.
 class GameOverState : public State
 {
 public:

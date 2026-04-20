@@ -9,7 +9,6 @@
 #include "game_over_state.hpp"
 #include "state.hpp"
 #include "multiplayer_gamestate.hpp"
-//John Nally D00258753
 Application::Application() : m_window(sf::VideoMode({ 1024, 768 }), "States", sf::Style::Close),
 m_key_binding_1(1), 
 m_key_binding_2(2),
@@ -18,7 +17,7 @@ m_stack(State::Context(m_window, m_textures, m_fonts, m_sound, m_key_binding_1, 
 	m_window.setKeyRepeatEnabled(false);
 	m_fonts.Load(FontID::kMain, "Media/Fonts/Sansation.ttf");
 	m_textures.Load(TextureID::kEagle, "Media/Textures/Player1.png");
-	m_textures.Load(TextureID::kEagle2, "Media/Textures/Player2.png"); //Ben Arrowsmith
+	m_textures.Load(TextureID::kEagle2, "Media/Textures/Player2.png"); 
 	m_textures.Load(TextureID::kPlayer1Walk1, "Media/Textures/Player1_Walk1.png");
 	m_textures.Load(TextureID::kPlayer1Walk2, "Media/Textures/Player1_Walk2.png");
 	m_textures.Load(TextureID::kPlayer2Walk1, "Media/Textures/Player2_Walk1.png");
@@ -96,6 +95,7 @@ void Application::RegisterStates()
 	m_stack.RegisterState<SettingsState>(StateID::kSettings);
 	m_stack.RegisterState<GameOverState>(StateID::kGameOver);
 
+	//John Nally D00258753: Networking features added for menu register
 	m_stack.RegisterState<MultiplayerGameState>(StateID::kHostGame, true);
 	m_stack.RegisterState<MultiplayerGameState>(StateID::kJoinGame, false);
 	m_stack.RegisterState<PauseState>(StateID::kNetworkPause);

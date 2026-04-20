@@ -8,8 +8,8 @@
 #include <iostream>
 #include "sound_node.hpp"
 
-//Ben Arrowsmith D00257746
 //John Nally D00258753
+//Claude AI was used to help adjust these function for new features
 namespace
 {
 	const std::vector<AircraftData> Table = InitializeAircraftData();
@@ -251,10 +251,8 @@ void Aircraft::UpdateAnimation(sf::Time dt) {
 	}
 }
 
-
-
-
 //Network Identity Functions
+//John Nally D00238753
 
 uint8_t Aircraft::GetIdentifier() const
 {

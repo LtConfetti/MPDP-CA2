@@ -4,6 +4,7 @@
 #include <SFML/Window/Keyboard.hpp>
 #include "Action.hpp"
 
+//This function was added since CA1 and was taken directly from the repo so that we could have easier key binding for networking and local play
 class KeyBinding
 {
 public:

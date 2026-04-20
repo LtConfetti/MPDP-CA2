@@ -10,7 +10,7 @@
 #include "sound_node.hpp"
 #include "posteffect.hpp"
 
-// Ben Arrowsmith D00257746
+//Claude AI was used in the restructing and commenting of this class aswell as helped with the implementation of features
 // John Nally D00258753
 
 World::World(sf::RenderWindow& window, SoundPlayer& sounds, FontHolder& font, bool networked)
@@ -174,10 +174,10 @@ void World::BuildScene()
 // Network aircraft management
 // ---------------------------------------------------------------------------
 
-Aircraft* World::AddAircraft(uint8_t identifier)
+Aircraft* World::AddAircraft(uint8_t identifier, bool is_local)
 {
     // identifier 1 -> kEagle (Player 1), everything else -> kEagle2 (Player 2)
-    AircraftType type = (identifier == 1) ? AircraftType::kEagle : AircraftType::kEagle2;
+    AircraftType type = is_local ? AircraftType::kEagle : AircraftType::kEagle2;
 
     std::unique_ptr<Aircraft> aircraft(new Aircraft(type, m_textures, m_fonts));
     aircraft->SetIdentifier(identifier);

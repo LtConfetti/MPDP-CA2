@@ -7,7 +7,9 @@
 #include "statestack.hpp"
 #include "key_binding.hpp"
 
-//Ben Arrowsmith D00257746
+//John Nally D00258753
+//Difference Between CA1, references the new Key Binding class for local play between player 1 and 2, also all networked players use Player 1 Controls
+
 class Application
 {
 public:

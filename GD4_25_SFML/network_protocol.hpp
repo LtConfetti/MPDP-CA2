@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/System/Vector2.hpp>
 const unsigned short SERVER_PORT = 50000; //Greater than 49151, in dynamic port range
+
+//Added from the John Loane Branch, and then adjusted for our games gameplay loop and features, AI was used to help comment
 namespace Server
 {
 	enum class PacketType
@@ -14,10 +16,10 @@ namespace Server
 		kSpawnSelf,             // Tells this client its own identifier + spawn position
 		kUpdateClientState,     // Periodic position + score sync from server to all clients
 		kMissionSuccess,        // Someone hit 30 points - game over
-		kSpawnPickup,             // Spawn a pickup at a position
-		kLobbyCountdown,          // Server sends remaining lobby seconds to all clients
-		kLobbyDone,               // Server tells all clients to start the game
-		kGameTimer                // Server broadcasts remaining game seconds every second
+		kSpawnPickup,             // D00258753: John Nally Spawn a pickup at a position
+		kLobbyCountdown,          // Claude AI: Server sends remaining lobby seconds to all clients
+		kLobbyDone,               // Claude AI: Server tells all clients to start the game
+		kGameTimer                // D00258753 John Nally: Server broadcasts remaining game seconds every second
 	};
 }
 

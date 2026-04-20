@@ -5,6 +5,8 @@
 #include "button.hpp"
 #include "label.hpp"
 
+//John Nally D00258753
+//Difference is added the new binding systems so they can be edited in the settings UI.
 class SettingsState : public State
 {
 public:

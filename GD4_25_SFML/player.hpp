@@ -8,7 +8,8 @@
 #include "key_binding.hpp"
 #include <SFML/Network/TcpSocket.hpp>
 
-
+//D00258753 John Nally
+//Difference from CA1 is adding uint8_t identifiers for each player so they can work in the networked game, and sockets to be connected
 class Player
 {
 public:

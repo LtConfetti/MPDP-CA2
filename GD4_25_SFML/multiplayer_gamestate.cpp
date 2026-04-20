@@ -9,9 +9,7 @@
 #include <iostream>
 
 // ---------------------------------------------------------------------------
-// Helper: read the server IP from ip.txt next to the executable.
-// Host writes "127.0.0.1"; joiner writes the host machine's LAN IP.
-// Function made with the use of AI to work for our game, with context to our features and needs.
+// This Function was heavily edited by Claude AI to fit our games functions and help identify any variables or functions needed during development
 // ---------------------------------------------------------------------------
 static sf::IpAddress GetAddressFromFile()
 {
@@ -305,7 +303,7 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         sf::Vector2f pos;
         packet >> id >> pos.x >> pos.y;
 
-        Aircraft* aircraft = m_world.AddAircraft(id);
+        Aircraft* aircraft = m_world.AddAircraft(id, true);
         aircraft->setPosition(pos);
 
         GetContext().player->SetIdentifier(id);         // Store local identifier on player object
@@ -337,7 +335,7 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
         sf::Vector2f pos;
         packet >> id >> pos.x >> pos.y;
 
-        Aircraft* aircraft = m_world.AddAircraft(id);
+        Aircraft* aircraft = m_world.AddAircraft(id, false);
         aircraft->setPosition(pos);
         m_players[id].reset(new Player(&m_socket, id, nullptr));
 
@@ -369,7 +367,7 @@ void MultiplayerGameState::HandlePacket(uint8_t packet_type, sf::Packet& packet)
             sf::Vector2f pos;
             packet >> id >> pos.x >> pos.y >> hitpoints >> score;
 
-            Aircraft* aircraft = m_world.AddAircraft(id);
+            Aircraft* aircraft = m_world.AddAircraft(id, false);
             aircraft->setPosition(pos);
             //aircraft->SetHitpoints(hitpoints);
             if (score > 0) aircraft->AddScore(score);

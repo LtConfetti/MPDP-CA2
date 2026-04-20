@@ -8,5 +8,5 @@ enum class MissionStatus
 	//John Nally: kPlayerXWins is the winstate for Player 1 or 2 winning
 	kPlayer1Wins,
 	kPlayer2Wins,
-	kPlayerXWins
+	kPlayerXWins //John Nally, D00258753: Generic win state for networked play
 };

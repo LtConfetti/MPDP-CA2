@@ -20,7 +20,7 @@ private:
 	sf::Sprite m_background_sprite;
 	gui::Container m_gui_container;
 
-	void LoadResults();
+	void LoadResults(); //John Nally D00258753: Loads the match history and personal wins from a file and displays it on the menu for persistency, AI suggested to use a Vector for the highlighted text I wanted to achieve
 	sf::RectangleShape m_scoreboard_bg;
 	sf::Text m_scoreboard_title; 
 	sf::Text m_personal_wins; //Personal Wins counted

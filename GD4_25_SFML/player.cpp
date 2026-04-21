@@ -192,8 +192,8 @@ void Player::InitialiseActions()
         DerivedAction<Aircraft>(AircraftMover(0.f, -1.f, m_identifier));
     m_action_binding[Action::kMoveDown].action =
         DerivedAction<Aircraft>(AircraftMover(0.f, +1.f, m_identifier));
-    m_action_binding[Action::kBulletFire].action =
-        DerivedAction<Aircraft>(AircraftFireTrigger(m_identifier));
+   // m_action_binding[Action::kBulletFire].action =
+        //DerivedAction<Aircraft>(AircraftFireTrigger(m_identifier));
 }
 
 //Mission Status and winner ID getters/setters

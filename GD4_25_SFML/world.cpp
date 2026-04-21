@@ -340,7 +340,7 @@ void World::HandleCollisions()
             int pts = pointbox.GetPointValue();
             player.AddScore(pts);
             if (!m_networked) m_player1_score += pts;
-            player.PlayLocalSound(m_command_queue, SoundEffect::kCollectPickup);
+            //player.PlayLocalSound(m_command_queue, SoundEffect::kCollectPickup);
             pointbox.Destroy();
         }
         // ---- Player 2 collects point box ----
@@ -353,7 +353,7 @@ void World::HandleCollisions()
             int pts = pointbox.GetPointValue();
             player.AddScore(pts);
             if (!m_networked) m_player2_score += pts;
-            player.PlayLocalSound(m_command_queue, SoundEffect::kCollectPickup);
+            //player.PlayLocalSound(m_command_queue, SoundEffect::kCollectPickup);
             pointbox.Destroy();
         }
     }
